@@ -1,0 +1,46 @@
+version: "3"
+
+services:
+  db:
+    image: postgis/postgis
+    volumes:
+      - ./data/db1:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - ALLOW_IP_RANGE=0.0.0.0/0
+      - POSTGRES_MULTIPLE_EXTENSIONS=postgis,hstore,postgis_topology,postgis_raster,pgrouting
+  web:
+    build: .
+    command:
+      - /bin/bash
+      - -c
+      - |
+        python manage.py runserver 0.0.0.0:8000
+        python subscribe.py
+        python publish.py
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+  subscribe:
+    build:
+      context: .
+      dockerfile: Dockerfile_pubsub
+    command: python subscribe.py
+    volumes:
+      - .:/code
+    depends_on:
+      - web
+  publish:
+    build:
+      context: .
+      dockerfile: Dockerfile_pubsub
+    command: python publish.py
+    volumes:
+      - .:/code
+    depends_on:
+      - subscribe
