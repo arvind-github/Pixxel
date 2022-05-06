@@ -2,8 +2,7 @@ import pytest
 import requests
 import json
 
-old_url = "http://10.27.87.0:8000/api/crud/"
-url = "http://10.25.215.42:8000/api/crud/"
+url = "http://machine_ip:8000/api/crud/"
 def test_get_request():
    response = requests.get(url)
    assert response.status_code == 200
